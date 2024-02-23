@@ -10,7 +10,9 @@
 // MD imports
 #include "types.h"
 
-void drawRect(Vector2 pos, size_t lines, size_t columns){
+
+void drawRect(Vector2 pos, size_t lines, size_t columns)
+{
     mvaddch(pos.y, pos.x,'+');
     mvaddch(pos.y+lines+1, pos.x+columns+1, '+');
     mvaddch(pos.y+lines+1, pos.x,'+');
@@ -26,21 +28,25 @@ void drawRect(Vector2 pos, size_t lines, size_t columns){
     move(0,0);
 }
 
-void drawTextRect(const char *str, Vector2 pos, size_t lines, size_t columns){
+void drawTextRect(const char *str, Vector2 pos, size_t lines, size_t columns)
+{
     drawRect(pos, lines, columns);
     mvaddstr(pos.y+1,pos.x+1, str);
     move(0,0);
 }
 
-void drawTextRectAuto(const char *str, Vector2 pos){
+void drawTextRectAuto(const char *str, Vector2 pos)
+{
     drawTextRect(str, pos, 1, strlen(str));
 }
 
-void drawTextVec(const char *str, Vector2 pos){
+void drawTextVec(const char *str, Vector2 pos)
+{
     mvaddstr(pos.y+1,pos.x+1, str);
 }
 
-Vector2 getCenter(void){
+Vector2 getCenter(void)
+{
     int width, height;
     getmaxyx(stdscr, height, width);
     return (Vector2){height/2, width/2};
