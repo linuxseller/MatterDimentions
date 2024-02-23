@@ -6,7 +6,7 @@
 # Compilation
 
 # Linux
-## Debian/Ubuntu
+## Debian/Ubuntu and derivatives
 ```console
 # apt upgrade && apt update
 # apt install libncurses5-dev libncursesw5-dev
