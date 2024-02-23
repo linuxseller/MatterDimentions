@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     getmaxyx(stdscr, height, width);
     char *welcome_text = "Hello From Matter Dimentions Project!";
     move(height/2, width/2 - (int)strlen(welcome_text)/2);
-    printw(welcome_text);
+    printw("%s", welcome_text);
     getch();
     endwin();
     printf("%dx%d\n", width, height);
