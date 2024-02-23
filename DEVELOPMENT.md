@@ -24,7 +24,7 @@ if(a == b){...}
 
 // Curly braces
 // Loops must ALWAYS use curly
-for(int i=0; i<10;i++){
+for(int i=0; i<10; i++){
     printf("Hi :)\n");
 }
 // Functions
