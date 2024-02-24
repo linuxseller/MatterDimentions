@@ -9,7 +9,8 @@
 
 #include "types.h"
 
-void *calculation_loop(void *arg){
+void *calculation_loop(void *arg)
+{
     (void) arg;
     while(1){
         for (size_t i = 0; i<atomic_load(&game_progress.dims_unlocked) && i < DIMENTIONS_TOTAL; i++) {

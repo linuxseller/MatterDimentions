@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdatomic.h>
 #include <pthread.h>
 
@@ -12,19 +13,51 @@
 // MD imports
 #include "types.h"
 
+char box_left_up_corner = '+';
+char box_left_down_corner = '+';
+char box_right_up_corner = '+';
+char box_right_down_corner = '+';
+char box_horisontal_bar = '-';
+char box_vertical_bar = '|';
+
+bool utf8_enabled = false;
+
+#define DIMENTIONS_TOTAL 10
+Dimention dimentions[DIMENTIONS_TOTAL] = {
+    {.id=1,.earn_rate=1   ,.tick_speed=1, .amount=2},
+    {.id=2,.earn_rate=10  ,.tick_speed=1, .amount=1},
+    {.id=3,.earn_rate=100 ,.tick_speed=1, .amount=0},
+    {.id=4,.earn_rate=1000,.tick_speed=1, .amount=0},
+    {.id=5,.earn_rate=1000,.tick_speed=1, .amount=0},
+    {.id=6,.earn_rate=1000,.tick_speed=1, .amount=0},
+    {.id=7,.earn_rate=1000,.tick_speed=1, .amount=0},
+    {.id=8,.earn_rate=1000,.tick_speed=1, .amount=0},
+    {.id=9,.earn_rate=1000,.tick_speed=1, .amount=0},
+    {.id=10,.earn_rate=1000,.tick_speed=1, .amount=0},
+};
+
+GameProgress game_progress = {0};
+#include "calculation.c"
+// WARNING: NCURSES USES (Y;X), not (X;Y)
+typedef enum loadingScreenTextEnum {LSTE_HELLO, LSTE_PRESS_ANY} lSTE;
+char *loadingScreenText[] = {
+    [LSTE_HELLO] = "Hello From Matter Dimentions Project!",
+    [LSTE_PRESS_ANY] = "Press any button to continue..."
+};
+
 void drawRect(Vector2 pos, size_t lines, size_t columns)
 {
-    mvaddch(pos.y, pos.x,'+');
-    mvaddch(pos.y+lines+1, pos.x+columns+1, '+');
-    mvaddch(pos.y+lines+1, pos.x,'+');
-    mvaddch(pos.y, pos.x+columns+1, '+');
+    mvaddch(pos.y, pos.x, box_left_up_corner);
+    mvaddch(pos.y+lines+1, pos.x+columns+1, box_right_down_corner);
+    mvaddch(pos.y+lines+1, pos.x, box_left_down_corner);
+    mvaddch(pos.y, pos.x+columns+1, box_right_up_corner);
     for (size_t i = 0; i < columns; i++) {
-        mvaddch(pos.y, pos.x+1+i, '-');
-        mvaddch(pos.y+lines+1, pos.x+1+i,'-');
+        mvaddch(pos.y, pos.x+1+i, box_horisontal_bar);
+        mvaddch(pos.y+lines+1, pos.x+1+i,box_horisontal_bar);
     }
     for (size_t i = 0; i < lines; i++) {
-        mvaddch(pos.y+1+i, pos.x, '|');
-        mvaddch(pos.y+1+i, pos.x+columns+1,'|');
+        mvaddch(pos.y+1+i, pos.x, box_vertical_bar);
+        mvaddch(pos.y+1+i, pos.x+columns+1,box_vertical_bar);
     }
     move(0,0);
 }
@@ -53,34 +86,44 @@ Vector2 getCenter(void)
     return (Vector2){height/2, width/2};
 }
 
-#define DIMENTIONS_TOTAL 10
-Dimention dimentions[DIMENTIONS_TOTAL] = {
-    {.id=1,.earn_rate=1   ,.tick_speed=1, .amount=2},
-    {.id=2,.earn_rate=10  ,.tick_speed=1, .amount=1},
-    {.id=3,.earn_rate=100 ,.tick_speed=1, .amount=0},
-    {.id=4,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=5,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=6,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=7,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=8,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=9,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=10,.earn_rate=1000,.tick_speed=1, .amount=0},
-};
 
-GameProgress game_progress = {0};
-#include "calculation.c"
 
-// WARNING: NCURSES USES (Y;X), not (X;Y)
-typedef enum loadingScreenTextEnum {LSTE_HELLO, LSTE_PRESS_ANY} lSTE;
-char *loadingScreenText[] = {
-    [LSTE_HELLO] = "Hello From Matter Dimentions Project!",
-    [LSTE_PRESS_ANY] = "Press any button to continue..."
-};
+char *shift_args(int *argc, char ***argv)
+{
+    *argc-=1;
+    *argv+=1;
+    return *(*argv-1);
+}
+
+void print_usage(const char *program_name){
+    fprintf(stderr, "usage:\n%s [arguments]\n", program_name);
+    fprintf(stderr, "arguments:\n");
+    fprintf(stderr, "\t-utf8 : enables utf-8 support instead of ascii\n");
+}
+
 int main(int argc, char **argv)
 {
-    (void) argc;
-    (void) argv;
     // Game setup
+    char *program_name = shift_args(&argc, &argv);
+    while(argc!=0){
+        char *argument = shift_args(&argc, &argv);
+        if(strcmp(argument, "-h")==0){
+            print_usage(program_name);
+            exit(69);
+        } else if(strcmp(argument, "-utf8")==0){
+            utf8_enabled = true;
+        }
+    }
+    // TODO: add utf-8 markings for box boundaries
+    /* if(utf8_enabled){ */
+    /*     box_vertical_bar = ''; */
+    /*     box_horisontal_bar = ''; */
+    /*     box_left_up_corner = ''; */
+    /*     box_right_up_corner = ''; */
+    /*     box_left_down_corner = ''; */
+    /*     box_right_down_corner = ''; */
+    /* } */
+
     initscr();
     int width, height;
     getmaxyx(stdscr, height, width);
