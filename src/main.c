@@ -53,11 +53,11 @@ void drawRect(Vector2 pos, size_t lines, size_t columns)
     mvaddch(pos.y, pos.x+columns+1, box_right_up_corner);
     for (size_t i = 0; i < columns; i++) {
         mvaddch(pos.y, pos.x+1+i, box_horisontal_bar);
-        mvaddch(pos.y+lines+1, pos.x+1+i,box_horisontal_bar);
+        mvaddch(pos.y+lines+1, pos.x+1+i, box_horisontal_bar);
     }
     for (size_t i = 0; i < lines; i++) {
         mvaddch(pos.y+1+i, pos.x, box_vertical_bar);
-        mvaddch(pos.y+1+i, pos.x+columns+1,box_vertical_bar);
+        mvaddch(pos.y+1+i, pos.x+columns+1, box_vertical_bar);
     }
     move(0,0);
 }
