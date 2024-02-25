@@ -6,19 +6,26 @@
 #include <stdbool.h>
 #include <stdatomic.h>
 #include <pthread.h>
+#include <stddef.h>
+#include <uchar.h>
+#include <locale.h>
+#include <wchar.h>
 
 // Other libs include
+#define _XOPEN_SOURCE 700
 #include <curses.h>
 
 // MD imports
 #include "types.h"
 
-char box_left_up_corner = '+';
-char box_left_down_corner = '+';
-char box_right_up_corner = '+';
-char box_right_down_corner = '+';
-char box_horisontal_bar = '-';
-char box_vertical_bar = '|';
+#define string char*
+
+string box_left_up_corner    = "+";
+string box_left_down_corner  = "+";
+string box_right_up_corner   = "+";
+string box_right_down_corner = "+";
+string box_horisontal_bar    = "-";
+string box_vertical_bar      = "|";
 
 bool utf8_enabled = false;
 
@@ -40,41 +47,41 @@ GameProgress game_progress = {0};
 #include "calculation.c"
 // WARNING: NCURSES USES (Y;X), not (X;Y)
 typedef enum loadingScreenTextEnum {LSTE_HELLO, LSTE_PRESS_ANY} lSTE;
-char *loadingScreenText[] = {
+string loadingScreenText[] = {
     [LSTE_HELLO] = "Hello From Matter Dimentions Project!",
     [LSTE_PRESS_ANY] = "Press any button to continue..."
 };
 
 void drawRect(Vector2 pos, size_t lines, size_t columns)
 {
-    mvaddch(pos.y, pos.x, box_left_up_corner);
-    mvaddch(pos.y+lines+1, pos.x+columns+1, box_right_down_corner);
-    mvaddch(pos.y+lines+1, pos.x, box_left_down_corner);
-    mvaddch(pos.y, pos.x+columns+1, box_right_up_corner);
+    mvaddstr(pos.y,         pos.x,           box_left_up_corner);
+    mvaddstr(pos.y+lines+1, pos.x+columns+1, box_right_down_corner);
+    mvaddstr(pos.y+lines+1, pos.x,           box_left_down_corner);
+    mvaddstr(pos.y,         pos.x+columns+1, box_right_up_corner);
     for (size_t i = 0; i < columns; i++) {
-        mvaddch(pos.y, pos.x+1+i, box_horisontal_bar);
-        mvaddch(pos.y+lines+1, pos.x+1+i, box_horisontal_bar);
+        mvaddstr(pos.y,         pos.x+1+i,   box_horisontal_bar);
+        mvaddstr(pos.y+lines+1, pos.x+1+i,   box_horisontal_bar);
     }
     for (size_t i = 0; i < lines; i++) {
-        mvaddch(pos.y+1+i, pos.x, box_vertical_bar);
-        mvaddch(pos.y+1+i, pos.x+columns+1, box_vertical_bar);
+        mvaddstr(pos.y+1+i, pos.x,           box_vertical_bar);
+        mvaddstr(pos.y+1+i, pos.x+columns+1, box_vertical_bar);
     }
     move(0,0);
 }
 
-void drawTextRect(const char *str, Vector2 pos, size_t lines, size_t columns)
+void drawTextRect(const string str, Vector2 pos, size_t lines, size_t columns)
 {
     drawRect(pos, lines, columns);
     mvaddstr(pos.y+1,pos.x+1, str);
     move(0,0);
 }
 
-void drawTextRectAuto(const char *str, Vector2 pos)
+void drawTextRectAuto(const string str, Vector2 pos)
 {
     drawTextRect(str, pos, 1, strlen(str));
 }
 
-void drawTextVec(const char *str, Vector2 pos)
+void drawTextVec(const string str, Vector2 pos)
 {
     mvaddstr(pos.y+1,pos.x+1, str);
 }
@@ -88,25 +95,26 @@ Vector2 getCenter(void)
 
 
 
-char *shift_args(int *argc, char ***argv)
+string shift_args(int *argc, string **argv)
 {
     *argc-=1;
     *argv+=1;
     return *(*argv-1);
 }
 
-void print_usage(const char *program_name){
+void print_usage(const string program_name){
     fprintf(stderr, "usage:\n%s [arguments]\n", program_name);
     fprintf(stderr, "arguments:\n");
     fprintf(stderr, "\t-utf8 : enables utf-8 support instead of ascii\n");
 }
 
-int main(int argc, char **argv)
+int main(int argc, string *argv)
 {
     // Game setup
-    char *program_name = shift_args(&argc, &argv);
+    setlocale(LC_ALL,"");
+    string program_name = shift_args(&argc, &argv);
     while(argc!=0){
-        char *argument = shift_args(&argc, &argv);
+        string argument = shift_args(&argc, &argv);
         if(strcmp(argument, "-h")==0){
             print_usage(program_name);
             exit(69);
@@ -115,14 +123,14 @@ int main(int argc, char **argv)
         }
     }
     // TODO: add utf-8 markings for box boundaries
-    /* if(utf8_enabled){ */
-    /*     box_vertical_bar = ''; */
-    /*     box_horisontal_bar = ''; */
-    /*     box_left_up_corner = ''; */
-    /*     box_right_up_corner = ''; */
-    /*     box_left_down_corner = ''; */
-    /*     box_right_down_corner = ''; */
-    /* } */
+    if(utf8_enabled){
+        box_vertical_bar      = "│";
+        box_horisontal_bar    = "─";
+        box_left_up_corner    = "╭";
+        box_right_up_corner   = "╮";
+        box_left_down_corner  = "╰";
+        box_right_down_corner = "╯";
+    }
 
     initscr();
     int width, height;
@@ -153,7 +161,7 @@ int main(int argc, char **argv)
                 .amount     = atomic_load(&dimentions[i].amount)
             };
             sprintf(tmpstr, "Dim %zu: %zu per %zu second | %zu", cur_dim.id, cur_dim.earn_rate, cur_dim.tick_speed, cur_dim.amount);
-            Vector2 pos = {width/2-strlen(tmpstr)/2, height*i/DIMENTIONS_TOTAL};
+            Vector2 pos = {width/4*2-strlen(tmpstr)/4*2, height*i/DIMENTIONS_TOTAL};
             drawTextRectAuto(tmpstr, pos);
         }
         sprintf(tmpstr, "Matter amount: %zu", atomic_load(&game_progress.matter_amount));

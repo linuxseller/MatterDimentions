@@ -1,5 +1,5 @@
 CFLAGS=-Werror -Wextra -Wall -pedantic
-CLIBS=-lncurses
+CLIBS=-lncursesw
 CC:=cc
 all:
 	$(CC) $(CFLAGS) src/main.c -o matter_dimentions $(CLIBS)
