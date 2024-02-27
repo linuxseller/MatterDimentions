@@ -34,16 +34,16 @@ size_t dimention_selected = 0;
 
 #define DIMENTIONS_TOTAL 10
 Dimention dimentions[DIMENTIONS_TOTAL] = {
-    {.id=1,.earn_rate=1   ,.tick_speed=1, .amount=2},
-    {.id=2,.earn_rate=10  ,.tick_speed=1, .amount=0},
-    {.id=3,.earn_rate=100 ,.tick_speed=1, .amount=0},
-    {.id=4,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=5,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=6,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=7,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=8,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=9,.earn_rate=1000,.tick_speed=1, .amount=0},
-    {.id=10,.earn_rate=1000,.tick_speed=1, .amount=0},
+    {.id=1  , .earn_rate=5    , .tick_speed=1 , .amount=0, .cost=10} ,
+    {.id=2  , .earn_rate=10   , .tick_speed=1 , .amount=0, .cost=100} ,
+    {.id=3  , .earn_rate=100  , .tick_speed=1 , .amount=0, .cost=-1} ,
+    {.id=4  , .earn_rate=1000 , .tick_speed=1 , .amount=0, .cost=-1} ,
+    {.id=5  , .earn_rate=1000 , .tick_speed=1 , .amount=0, .cost=-1} ,
+    {.id=6  , .earn_rate=1000 , .tick_speed=1 , .amount=0, .cost=-1} ,
+    {.id=7  , .earn_rate=1000 , .tick_speed=1 , .amount=0, .cost=-1} ,
+    {.id=8  , .earn_rate=1000 , .tick_speed=1 , .amount=0, .cost=-1} ,
+    {.id=9  , .earn_rate=1000 , .tick_speed=1 , .amount=0, .cost=-1} ,
+    {.id=10 , .earn_rate=1000 , .tick_speed=1 , .amount=0, .cost=-1} ,
 };
 
 GameProgress game_progress = {0};
@@ -188,8 +188,8 @@ int main(int argc, string *argv)
     int char_pressed = getch();
     // Game start
     clear();
-    atomic_exchange(&game_progress.dims_unlocked, 3);
-    atomic_exchange(&game_progress.matter_amount, 0);
+    atomic_exchange(&game_progress.dims_unlocked, 1);
+    atomic_exchange(&game_progress.matter_amount, 10);
     pthread_t calculation_thread_id;
     pthread_create(&calculation_thread_id, NULL, calculation_loop, NULL);
     char *tmpstr = malloc(strlen("Dim")+100);
@@ -199,9 +199,10 @@ int main(int argc, string *argv)
                 .id         = atomic_load(&dimentions[i].id),
                 .earn_rate  = atomic_load(&dimentions[i].earn_rate),
                 .tick_speed = atomic_load(&dimentions[i].tick_speed),
-                .amount     = atomic_load(&dimentions[i].amount)
+                .amount     = atomic_load(&dimentions[i].amount),
+                .cost       = atomic_load(&dimentions[i].cost),
             };
-            sprintf(tmpstr, "Dim %zu: %zu per %zu second | %zu", cur_dim.id, cur_dim.earn_rate, cur_dim.tick_speed, cur_dim.amount);
+            sprintf(tmpstr, "Dim %zu %zu matter : %zu/%zusec | %zu", cur_dim.id, cur_dim.cost, cur_dim.earn_rate, cur_dim.tick_speed, cur_dim.amount);
             Vector2 pos = {game_window_center.x-strlen(tmpstr)/2,
                            (height-5)*i/DIMENTIONS_TOTAL+5};
             if(i==dimention_selected){
@@ -227,9 +228,24 @@ int main(int argc, string *argv)
             case KEY_DOWN:
                 dimention_selected = (dimention_selected + 1)%tmp_dims_unlocked;
                 break;
+            case KEY_ENTER:
+            case ' ':
+                if(atomic_load(&game_progress.matter_amount)>=dimentions[dimention_selected].cost){
+                    atomic_fetch_sub(&game_progress.matter_amount, dimentions[dimention_selected].cost);
+                    if(atomic_load(&game_progress.dims_unlocked)-1==dimention_selected){
+                        atomic_fetch_add(&game_progress.dims_unlocked, 1);
+                    }
+                    atomic_fetch_add(&dimentions[dimention_selected].amount, 1);
+                    if(atomic_load(&dimentions[dimention_selected].amount)%10==0){
+                        atomic_store(&dimentions[dimention_selected].cost,
+                                atomic_load(&dimentions[dimention_selected].cost)*10);
+                    }
+                }
+                break;
             default:
                 break;
         }
+        mvwaddstr(other_window, 1, 1, "                        ");
     }
     free(tmpstr);
     endwin();

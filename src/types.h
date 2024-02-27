@@ -10,6 +10,7 @@ typedef struct Dimention {
     atomic_size_t earn_rate;
     atomic_size_t tick_speed;
     atomic_size_t amount;
+    atomic_size_t cost;
 } Dimention;
 
 typedef struct GameProgress {
