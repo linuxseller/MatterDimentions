@@ -176,6 +176,9 @@ int main(int argc, string *argv)
     WINDOW *game_window = newwin(height, width*2/3, 0, width/3);
     keypad(game_window, TRUE);
     WINDOW *other_window = newwin(height, width/3, 0, 0);
+    Vector2 game_window_center = getCenter(game_window);
+    int char_pressed = getch();
+    // Game start
     // Nodelay initialisation
     nodelay(main_window, true);
     nodelay(game_window, true);
@@ -184,9 +187,7 @@ int main(int argc, string *argv)
     keypad(game_window, TRUE);
     keypad(other_window, TRUE);
     //-Nodelay-initialisation-
-    Vector2 game_window_center = getCenter(game_window);
-    int char_pressed = getch();
-    // Game start
+
     clear();
     atomic_exchange(&game_progress.dims_unlocked, 1);
     atomic_exchange(&game_progress.matter_amount, 10);

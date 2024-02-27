@@ -3,6 +3,16 @@
 
 '~~Anti~~matter Dimentions' is tui (at least for now) based game about waiting for your PC to calculate stuff. Basically mining crypto without earning any money :).
 
+# Usage
+```console
+$ ./matter_dimentions -h
+usage:
+./matter_dimentions [arguments]
+arguments:
+	-utf8 : enables utf-8 support instead of ascii
+$ ./matter_dimentions -utf8
+```
+
 # Compilation
 
 # Linux
